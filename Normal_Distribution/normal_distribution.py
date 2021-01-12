@@ -59,3 +59,48 @@ def unknown_area_plot(lower = None, upper = None, mu = 0, sigma = 1,
         plt.fill_between(x[mask], y[mask], color = color)
     
     plt.axis('off');
+
+
+def sampling_dist_plot(mu = 0, sigma = 1, sample_size = 30, figsize = (10,5), scaled = False):
+    '''
+    Generate a plot showing both the population distribution and the sampling distribution
+    of the mean for samples of size sample_size.
+
+    If scaled is true, then the sampling distribution plot is scaled to be the same height
+    as the population distribution.
+    '''
+
+    nd = norm(loc = mu, scale = sigma)
+    fontsize = 14
+    
+    sample_nd = norm(loc = mu, scale = sigma / np.sqrt(sample_size))
+    
+    xmin = nd.ppf(0.001)
+    xmax = nd.ppf(0.999)
+    
+    x = np.linspace(xmin, xmax, 1000)
+    y = nd.pdf(x)
+    y_sample = sample_nd.pdf(x)
+
+    if scaled:
+        y_sample = y_sample / y_sample.max() * y.max()
+    
+    fig, ax = plt.subplots(figsize = figsize)
+    
+    plt.plot(x, y, color = 'black', label = 'population')
+    plt.plot(x, y_sample, color = 'orange', label = 'sample mean', linewidth = 3)
+    plt.plot(x, [0]*len(x), color = 'black')
+    
+    plt.yticks([])
+    
+    plt.xticks(fontsize = fontsize)
+    
+    for side in ['top', 'right', 'left']:
+        ax.spines[side].set_visible(False)
+        
+    ymin, ymax = plt.ylim()
+    plt.ylim(0, ymax)
+
+    
+    plt.vlines(x = mu, ymin = 0, ymax = y_sample.max(), linestyle = '--')
+    plt.legend(loc = 'upper right', fontsize = fontsize - 2);
