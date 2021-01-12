@@ -60,6 +60,58 @@ def unknown_area_plot(lower = None, upper = None, mu = 0, sigma = 1,
     
     plt.axis('off');
 
+def percentile_plot(percentile, mu = 0, sigma = 1, 
+                      color = 'cornflowerblue', figsize = (10,6),
+                     meancolor = 'white'):
+    '''
+    Generate a plot with a known area shaded but unknown upper or lower bound
+    '''
+
+    fontsize = 24
+    
+    nd = norm(loc = mu, scale = sigma)
+    
+    xmin = nd.ppf(0.001)
+    xmax = nd.ppf(0.999)
+    
+    x = np.linspace(xmin, xmax, 1000)
+    y = nd.pdf(x)
+    
+    plt.figure(figsize = figsize)
+    
+    plt.plot(x, y, color = 'black')
+    plt.plot(x, [0]*len(x), color = 'black')
+    
+    ymin, ymax = plt.ylim()
+    
+    plt.ylim(-0.1*ymax, ymax)
+    
+    val = nd.ppf(percentile)
+    plt.annotate(s = '?', xy = (val, -0.01*ymax), 
+                 ha = 'center', va = 'top',
+                fontsize = fontsize, color = 'darkgreen')
+    plt.vlines(x = val, ymin = 0, ymax = nd.pdf(val))
+            
+    if mu != 0:
+        plt.annotate(s = str(mu), xy = (mu, 0),
+                    ha = 'center', va = 'bottom', color = meancolor,
+                    fontsize = fontsize -2)
+        plt.vlines(x = mu, ymin = 0.075*ymax, ymax = nd.pdf(mu), linestyle = '--', color = meancolor)
+
+    mask = (x <= val)
+
+    plt.fill_between(x[mask], y[mask], color = color)
+    
+    xarrow = min(mu - 1.5*sigma, (xmin + val) / 2)
+    
+    plt.annotate(s = 'Area: {}'.format(percentile),
+                xy = (xarrow, nd.pdf(xarrow)),
+                xytext = (xarrow - 0.25*sigma, 0.2*ymax + nd.pdf(xarrow)),
+                ha = 'right', va = 'center',
+                color = 'black', fontsize = fontsize,
+                arrowprops=dict(facecolor='black', shrink=0.05),)
+    plt.axis('off');
+
 
 def sampling_dist_plot(mu = 0, sigma = 1, sample_size = 30, figsize = (10,5), scaled = False):
     '''
